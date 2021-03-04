@@ -48,6 +48,7 @@ def connect():
     global connecting_to_dongle
     global console
     while connecting_to_dongle == 0:
+        print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
                 port=tty_port,
@@ -63,6 +64,34 @@ def connect():
         except:
             print("Dongle not connected. Please reconnect Dongle.")
             time.sleep(5)
+    print(f"\nConnected to Dongle.\n")
+
+
+def menu():
+    print("\nTest suite starting!\n")
+    while True:
+        choice = input(
+            "\n1. ATI\n2. TEST_DICT LENGTH\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Print completed tests\n7. AUTO TEST\n")
+        if choice == "1":
+            send_command("ATI")
+        elif choice == "2":
+            # send_command("AT+PERIPHERAL")
+            print(len(test_dict))
+        elif choice == "3":
+            auto_test(random.choice(testOne))
+        elif choice == "4":
+            send_command("AT+PERIPHERAL")
+        elif choice == "5":
+            send_command("AT+CENTRAL")
+        elif choice == "6":
+            print_completed_tests()
+        elif choice == "7":
+            for test_object in testTwo:
+                auto_test(test_object)
+            for test_object in testTwo:
+                print(test_object)
+        else:
+            print("Not valid input, try again.")
 
 
 def restart(restart):
@@ -78,15 +107,15 @@ def restart(restart):
 
 
 def print_completed_tests():
-    for test_status in test_dict:
-        print(f"{test_status}")
+    for test in testTwo:
+        for command in test["commands"]:
+            print(f"this is a command {command}")
 
 
 def auto_test(test_object):
     global con
     out = ' '
-    # i = 0
-    # i += 1
+    command_counter = 1
 
     for command in test_object["commands"]:
         print(f"Now testing: {command}\n-----------------")
@@ -104,8 +133,9 @@ def auto_test(test_object):
             pass_or_fail = "Pass"
         else:
             pass_or_fail = "Fail" if "ERROR" in out or "Invalid" in out else "Pass"
-        test_object["status"].append({command: pass_or_fail})
+        test_object["status"].append({command_counter: pass_or_fail})
         out = ' '
+        command_counter += 1
     if "pause" in test_object:
         time.sleep(test_object["pause"])
     else:
@@ -135,30 +165,5 @@ def send_command(cmd_one, cmd_two="ATI", dual=False):
 
 
 # Start of program
-print("\nConnecting to dongle...")
 con = connect()
-print(f"\nConnected to Dongle.\n")
-print("\nTest suite starting!\n")
-
-while True:
-    choice = input(
-        "\n1. ATI\n2. TEST_DICT LENGTH\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Print completed tests\n7. AUTO TEST\n")
-    if choice == "1":
-        send_command("ATI")
-    elif choice == "2":
-        # send_command("AT+PERIPHERAL")
-        print(len(test_dict))
-    elif choice == "3":
-        auto_test(random.choice(testOne))
-    elif choice == "4":
-        send_command("AT+PERIPHERAL")
-    elif choice == "5":
-        send_command("AT+CENTRAL")
-    elif choice == "6":
-        print_completed_tests()
-    elif choice == "7":
-        for test_object in testTwo:
-            auto_test(test_object)
-        print_completed_tests()
-    else:
-        print("Not valid input, try again.")
+menu()
