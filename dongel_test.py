@@ -1,8 +1,8 @@
 import random
 import serial
 import time
-from commandList import tests as testOne
-from stillViable import tests as testTwo
+from test_list import tests
+
 
 # Dongle and port settings
 connecting_to_dongle = 0
@@ -19,29 +19,18 @@ fail_states = ["ERROR", "Invalid"]
 # Test objects
 completed_tests = []
 test_to_run = ["AT+ADVSTART", "AT+ADVSTOP"]
-test_dict = [{
-    "type": "Advertising",
-    "commands": ["ATI"],
-    "status": [],
-    "restart": False
-}, {
-    "type": "ibeacon",
-    "commands": ["AT+ADVDATAI=5f2dd896-b886-4549-ae01-e41acd7a354a0203010400", "AT+ADVSTART", "AT+ADVSTOP"],
-    "status": [],
-    "restart": False
-}, {
-    "type": "eddystone",
-    "commands": ["AT+ADVDATA=03:03:aa:fe 0d:16:aa:fe:10:00:03:67:6f:6f:67:6c:65:07", "AT+ADVSTART", "AT+ADVSTOP"],
-    "status": [],
-    "restart": False}]
-
-tanke_object = {
-    "type": "Echo",
-    "commands": ["ATE1", "ATE0"],
-    "status": "none",
+local_tests = [{
+    "commands": ["AT"],
+    "result": [],
     "restart": False,
-    "pause": 5
-}
+    "pause": [0.5]
+}, {
+
+    "commands": ["AT+ADVDATA=03:03:aa:fe 0d:16:aa:fe:10:00:03:67:6f:6f:67:6c:65:07", "AT+ADVSTART", "AT+ADVSTOP"],
+    "result": [],
+    "restart": False,
+    "pause": [5, 0.5, 0.5]
+}]
 
 
 def connect():
@@ -51,7 +40,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port=tty_port,
+                port='COM4',
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
@@ -76,9 +65,9 @@ def menu():
             send_command("ATI")
         elif choice == "2":
             # send_command("AT+PERIPHERAL")
-            print(len(test_dict))
+            print(len(tests))
         elif choice == "3":
-            auto_test(random.choice(testOne))
+            auto_test(random.choice(tests))
         elif choice == "4":
             send_command("AT+PERIPHERAL")
         elif choice == "5":
@@ -86,10 +75,9 @@ def menu():
         elif choice == "6":
             print_completed_tests()
         elif choice == "7":
-            for test_object in testTwo:
+            for test_object in tests:
                 auto_test(test_object)
-            for test_object in testTwo:
-                print(test_object)
+            print_completed_tests()
         else:
             print("Not valid input, try again.")
 
@@ -107,18 +95,20 @@ def restart(restart):
 
 
 def print_completed_tests():
-    for test in testTwo:
-        for command in test["commands"]:
-            print(f"this is a command {command}")
+    for test_object in tests:
+        print("\n\n[Commands Run]")
+        print(test_object["commands"])
+        print("[Result]")
+        print(test_object["result"])
 
 
 def auto_test(test_object):
     global con
     out = ' '
     command_counter = 1
-
+    pause_counter = 0
     for command in test_object["commands"]:
-        print(f"Now testing: {command}\n-----------------")
+        print(f"\nNow testing: {command}\n-----------------")
         con.write(str.encode(command))
         con.write('\r'.encode())
         time.sleep(1)
@@ -128,18 +118,16 @@ def auto_test(test_object):
         time.sleep(0.2)
         if not out.isspace():
             print(">>" + out)
-        time.sleep(0.2)
+        print("pausing " + str(test_object["pause"][pause_counter]))
+        time.sleep(test_object["pause"][pause_counter])
+        pause_counter += 1
         if test_object.get("expected") in fail_states and test_object.get("expected") in out:
             pass_or_fail = "Pass"
         else:
             pass_or_fail = "Fail" if "ERROR" in out or "Invalid" in out else "Pass"
-        test_object["status"].append({command_counter: pass_or_fail})
+        test_object["result"].append({command_counter: pass_or_fail})
         out = ' '
         command_counter += 1
-    if "pause" in test_object:
-        time.sleep(test_object["pause"])
-    else:
-        time.sleep(3)
     if test_object["restart"]:
         restart(test_object)
     else:
