@@ -3,17 +3,14 @@ import serial
 import time
 from test_list import tests
 
-
 # Dongle and port settings
 connecting_to_dongle = 0
+mode= "PERIPHERAL"
 console = None
 comport = "COM4"
 tty_port = "/dev/tty.usbmodem4048FDE52D231"
 
 ctrl_c = "\x03"
-adv_data = "03:03:aa:fe"
-ibeacon = "5f2dd896-b886-4549-ae01-e41acd7a354a0203010400"
-eddystone_hex = "0d:16:aa:fe:10:00:03:67:6f:6f:67:6c:65:07"
 fail_states = ["ERROR", "Invalid"]
 
 # Test objects
@@ -64,7 +61,6 @@ def menu():
         if choice == "1":
             send_command("ATI")
         elif choice == "2":
-            # send_command("AT+PERIPHERAL")
             print(len(tests))
         elif choice == "3":
             auto_test(random.choice(tests))
@@ -107,6 +103,8 @@ def auto_test(test_object):
     out = ' '
     command_counter = 1
     pause_counter = 0
+    if "mode" in test_object:
+        send_command(test_object["mode"])
     for command in test_object["commands"]:
         print(f"\nNow testing: {command}\n-----------------")
         con.write(str.encode(command))
@@ -137,18 +135,16 @@ def auto_test(test_object):
 def send_command(cmd_one, cmd_two="ATI", dual=False):
     con.write(str.encode(cmd_one))
     con.write('\r'.encode())
-    time.sleep(1)
+    time.sleep(0.5)
     if dual:
         con.write(str.encode(cmd_two))
         con.write('\r'.encode())
     out = ' '
-    time.sleep(1)
+    time.sleep(0.5)
     while con.inWaiting() > 0:
         out += con.read(con.inWaiting()).decode()
-
     if not out.isspace():
-        print(">>" + out)
-    completed_tests.append({"COMPLETED": {False if "ERROR" in out else True}, "TEST": cmd_one})
+        print(f">> {out} {cmd_one}")
     time.sleep(0.1)
 
 
