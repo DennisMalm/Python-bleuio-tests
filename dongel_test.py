@@ -1,11 +1,12 @@
 import random
 import serial
 import time
+from flask import Flask, render_template
 from test_list import tests
 
 # Dongle and port settings
 connecting_to_dongle = 0
-mode= "PERIPHERAL"
+mode = "AT+PERIPHERAL"
 console = None
 comport = "COM4"
 tty_port = "/dev/tty.usbmodem4048FDE52D231"
@@ -16,18 +17,17 @@ fail_states = ["ERROR", "Invalid"]
 # Test objects
 completed_tests = []
 test_to_run = ["AT+ADVSTART", "AT+ADVSTOP"]
-local_tests = [{
-    "commands": ["AT"],
-    "result": [],
-    "restart": False,
-    "pause": [0.5]
-}, {
 
-    "commands": ["AT+ADVDATA=03:03:aa:fe 0d:16:aa:fe:10:00:03:67:6f:6f:67:6c:65:07", "AT+ADVSTART", "AT+ADVSTOP"],
-    "result": [],
-    "restart": False,
-    "pause": [5, 0.5, 0.5]
-}]
+app = Flask(__name__)
+
+
+@app.route('/')
+def base():
+    return render_template('base.html')
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 def connect():
@@ -99,14 +99,19 @@ def print_completed_tests():
 
 
 def auto_test(test_object):
+    global mode
     global con
     out = ' '
     command_counter = 1
     pause_counter = 0
     if "mode" in test_object:
-        send_command(test_object["mode"])
+        if test_object["mode"] is not mode:
+            print("Switching mode to " + test_object["mode"])
+            send_command(test_object["mode"])
+            mode = test_object["mode"]
+            time.sleep(1)
     for command in test_object["commands"]:
-        print(f"\nNow testing: {command}\n-----------------")
+        print(f"\n------------------------\nNow testing: {command}")
         con.write(str.encode(command))
         con.write('\r'.encode())
         time.sleep(1)
