@@ -1,7 +1,6 @@
 import random
 import serial
 import time
-from flask import Flask, render_template
 from test_list import tests
 
 # Dongle and port settings
@@ -18,17 +17,6 @@ fail_states = ["ERROR", "Invalid"]
 completed_tests = []
 test_to_run = ["AT+ADVSTART", "AT+ADVSTOP"]
 
-app = Flask(__name__)
-
-
-@app.route('/')
-def base():
-    return render_template('base.html')
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
-
 
 def connect():
     global connecting_to_dongle
@@ -37,7 +25,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port='COM4',
+                port=tty_port,
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
@@ -105,11 +93,11 @@ def auto_test(test_object):
     command_counter = 1
     pause_counter = 0
     if "mode" in test_object:
-        if test_object["mode"] is not mode:
+        if test_object.get("mode") not in mode:
             print("Switching mode to " + test_object["mode"])
             send_command(test_object["mode"])
             mode = test_object["mode"]
-            time.sleep(1)
+            time.sleep(2)
     for command in test_object["commands"]:
         print(f"\n------------------------\nNow testing: {command}")
         con.write(str.encode(command))
@@ -120,7 +108,7 @@ def auto_test(test_object):
             out += con.read(con.inWaiting()).decode()
         time.sleep(0.2)
         if not out.isspace():
-            print(">>" + out)
+            print(">> " + out)
         print("pausing " + str(test_object["pause"][pause_counter]))
         time.sleep(test_object["pause"][pause_counter])
         pause_counter += 1
@@ -153,6 +141,7 @@ def send_command(cmd_one, cmd_two="ATI", dual=False):
     time.sleep(0.1)
 
 
-# Start of program
-con = connect()
-menu()
+if __name__ == "__main__":
+    # Start of program
+    con = connect()
+    menu()
