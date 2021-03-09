@@ -10,12 +10,13 @@ console = None
 comport = "COM4"
 tty_port = "/dev/tty.usbmodem4048FDE52D231"
 
+# Test vars
 ctrl_c = "\x03"
 fail_states = ["ERROR", "Invalid"]
 
 # Test objects
 completed_tests = []
-test_to_run = ["AT+ADVSTART", "AT+ADVSTOP"]
+test_to_run = []
 
 
 def connect():
@@ -62,13 +63,14 @@ def menu():
             for test_object in tests:
                 auto_test(test_object)
             print_completed_tests()
+            restart()
         else:
             print("Not valid input, try again.")
 
 
-def restart(restart):
+def restart(obj="No object."):
     global con
-    print(restart)
+    print(obj)
     print("Restarting.")
     con.write(str.encode("ATR"))
     con.write('\r'.encode())
