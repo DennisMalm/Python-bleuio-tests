@@ -143,7 +143,7 @@ def send_command(cmd_one, cmd_two="ATI", dual=False):
     time.sleep(0.1)
 
 
+# Start of program
 if __name__ == "__main__":
-    # Start of program
     con = connect()
     menu()
