@@ -5,7 +5,7 @@ from test_list import tests
 
 # Dongle and port settings
 connecting_to_dongle = 0
-mode = "AT+PERIPHERAL"
+mode = ""
 console = None
 comport = "COM4"
 tty_port = "/dev/tty.usbmodem4048FDE52D231"
@@ -26,7 +26,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port=tty_port,
+                port=comport,
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
@@ -63,7 +63,7 @@ def menu():
             for test_object in tests:
                 auto_test(test_object)
             print_completed_tests()
-            restart()
+            send_command("AT+PERIPHERAL")
         else:
             print("Not valid input, try again.")
 
