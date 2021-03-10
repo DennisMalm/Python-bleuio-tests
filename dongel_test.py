@@ -1,14 +1,15 @@
 import random
 import serial
 import time
-from test_list import tests
+# from test_list import tests
+from alpha_tests import tests
 
 # Dongle and port settings
 connecting_to_dongle = 0
-mode = ""
+mode = "AT+PERIPHERAL"
 console = None
 comport = "COM4"
-tty_port = "/dev/tty.usbmodem4048FDE52D231"
+tty_port = "/dev/tty.usbmodem4048FDE52D2C1"
 
 # Test vars
 ctrl_c = "\x03"
@@ -26,7 +27,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port=comport,
+                port=tty_port,
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
@@ -46,11 +47,11 @@ def menu():
     print("\nTest suite starting!\n")
     while True:
         choice = input(
-            "\n1. ATI\n2. TEST_DICT LENGTH\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Print completed tests\n7. AUTO TEST\n")
+            "\n1. ATI\n2. WRITE COMMAND\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Print completed tests\n7. AUTO TEST\n")
         if choice == "1":
             send_command("ATI")
         elif choice == "2":
-            print(len(tests))
+            send_command(input("Write command to send: "))
         elif choice == "3":
             auto_test(random.choice(tests))
         elif choice == "4":
@@ -128,11 +129,12 @@ def auto_test(test_object):
 
 
 def send_command(cmd_one, cmd_two="ATI", dual=False):
-    con.write(str.encode(cmd_one))
+
+    con.write(cmd_one.encode())
     con.write('\r'.encode())
     time.sleep(0.5)
     if dual:
-        con.write(str.encode(cmd_two))
+        con.write(cmd_two.encode())
         con.write('\r'.encode())
     out = ' '
     time.sleep(0.5)

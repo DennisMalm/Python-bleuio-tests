@@ -38,18 +38,11 @@ tests = [
         "pause": [1, 1, 1]
     }, {
 
-        "commands": ["AT+GAPCONNECT=[0]FD:37:13:D0:6D:02", "AT+CANCELCONNECT", "AT+CANCELCONNECT"],
+        "commands": ["AT+GAPSCAN=5"],
         "mode": "AT+CENTRAL",
         "result": [],
         "restart": False,
-        "pause": [3, 1, 1]
-    }, {
-
-        "commands": ["AT+GAPSCAN=10", "\x03"],
-        "mode": "AT+CENTRAL",
-        "result": [],
-        "restart": False,
-        "pause": [5, 1]
+        "pause": [8]
     }, {
 
         "commands": ["AT+SCANTARGET=[1]00:00:00:00:00:01", "\x03"],
