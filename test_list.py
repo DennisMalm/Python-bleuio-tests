@@ -1,6 +1,6 @@
 tests = [
     {
-        "commands": ["AT"],
+        "commands": ["AT22"],
         "result": [],
         "restart": False,
         "pause": [0.5]
