@@ -49,7 +49,7 @@ def menu():
     while True:
         choice = input(
             "\n1. ATI\n2. WRITE COMMAND\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Restart\n7. "
-            "AUTO TEST\n8. PAIRINGS\n")
+            "AUTO TEST\n8. PAIRINGS\n9. Input port name and target mac address.")
         if choice == "1":
             send_command("ATI")
         elif choice == "2":
@@ -63,12 +63,14 @@ def menu():
         elif choice == "6":
             restart()
         elif choice == "7":
-
             auto_test(tests)
             print_completed_tests()
             send_command("AT+PERIPHERAL")
         elif choice == "8":
             print("pair tester")
+        elif choice == "9":
+            input("Port: ")
+            input("Target address")
         else:
             print("Not valid input, try again.")
 

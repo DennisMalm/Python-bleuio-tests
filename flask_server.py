@@ -10,9 +10,9 @@ test = np.random.rand()
 
 # Dongle and port settings
 connecting_to_dongle = 0
-mode = ""
+mode = " "
 console = None
-comport = "COM4"
+comport = "COM5"
 tty_port = "/dev/tty.usbmodem4048FDE52EE01"
 
 # Test vars
@@ -20,7 +20,29 @@ ctrl_c = "\x03"
 fail_states = ["ERROR", "Invalid"]
 
 
-# Tests
+# Methods
+def connect_to_dongle():
+    global connecting_to_dongle
+    global console
+    try:
+        console = serial.Serial(
+            port=comport,
+            baudrate=57600,
+            parity="N",
+            stopbits=1,
+            bytesize=8,
+            timeout=0
+        )
+        if console.is_open.__bool__():
+            connecting_to_dongle = 1
+            print("Connected to dongle!")
+            message = "Connected to dongle!"
+    except:
+        print("Dongle not connected. Please reconnect Dongle.")
+        message = "Dongle not connected. Please reconnect Dongle."
+    return message
+
+
 def restart(obj="No object."):
     global con
     print(obj)
@@ -33,59 +55,49 @@ def restart(obj="No object."):
     con = connect()
 
 
-def auto_test(test_object):
+
+def switch_mode(mode_change):
+    global mode
+    print(f"Switching mode to {mode_change}")
+    send_command(mode_change)
+    mode = mode_change
+    time.sleep(1)
+
+
+def auto_test(test_list):
     global mode
     global con
-    out = ' '
-    command_counter = 1
-    pause_counter = 0
-    if "mode" in test_object:
-        if test_object.get("mode") not in mode:
-            print("Switching mode to " + test_object["mode"])
-            send_command(test_object["mode"])
-            mode = test_object["mode"]
-            time.sleep(2)
-    for command in test_object["commands"]:
-        print(f"\n------------------------\nNow testing: {command}")
-        con.write(str.encode(command))
-        con.write('\r'.encode())
-        time.sleep(1)
-
-        while con.inWaiting() > 0:
-            out += con.read(con.inWaiting()).decode()
-        time.sleep(0.2)
-        if not out.isspace():
-            print(">> " + out)
-        print("pausing " + str(test_object["pause"][pause_counter]))
-        time.sleep(test_object["pause"][pause_counter])
-        pause_counter += 1
-        if test_object.get("expected") in fail_states and test_object.get("expected") in out:
-            pass_or_fail = "Pass"
+    for test in tests:
+        command_counter = 1
+        pause_counter = 0
+        if "mode" in test and test.get("mode") not in mode:
+            switch_mode(test["mode"])
+        for command in test["commands"]:
+            print(f"\n------------------------\nNow testing: {command}")
+            result = send_command(command)
+            print(f"Pausing for {str(test['pause'][pause_counter])}")
+            time.sleep(test["pause"][pause_counter])
+            pause_counter += 1
+            test["result"].append({command_counter: result})
+            command_counter += 1
+        if test["restart"]:
+            restart(test)
         else:
-            pass_or_fail = "Fail" if "ERROR" in out or "Invalid" in out else "Pass"
-        test_object["result"].append({command_counter: pass_or_fail})
-        out = ' '
-        command_counter += 1
-    if test_object["restart"]:
-        restart(test_object)
-    else:
-        print(test_object)
+            print(test)
 
 
-def send_command(cmd_one, cmd_two="ATI", dual=False):
-    con.write(str.encode(cmd_one))
-    con.write('\r'.encode())
-    time.sleep(0.5)
-    if dual:
-        con.write(str.encode(cmd_two))
-        con.write('\r'.encode())
+def send_command(cmd):
+    console.write(cmd.encode())
+    console.write('\r'.encode())
     out = ' '
     time.sleep(0.5)
-    while con.inWaiting() > 0:
-        out += con.read(con.inWaiting()).decode()
+    while console.inWaiting() > 0:
+        out += console.read(console.inWaiting()).decode()
     if not out.isspace():
-        print(f">> {out} {cmd_one}")
+        print(out)
     time.sleep(0.1)
+    return "Fail" if any(ele in out for ele in fail_states) else "Pass"
+
 
 
 # Routes
@@ -96,41 +108,20 @@ def base():
 
 @app.route('/test')
 def test():
-    for test in tests:
-        auto_test(test)
+    auto_test(tests)
     return render_template('test.html', result=tests)
 
 
 @app.route('/start', methods=["POST"])
 def start_tests():
-    return render_template('base.html')
-    # global test
-    # test = np.random.rand()
+    return render_template('result.html')
 
-
+@app.route('/connect')
 def connect():
-    global connecting_to_dongle
-    global console
-    while connecting_to_dongle == 0:
-        print("\nConnecting to dongle...")
-        try:
-            console = serial.Serial(
-                port=tty_port,
-                baudrate=57600,
-                parity="N",
-                stopbits=1,
-                bytesize=8,
-                timeout=0
-            )
-            if console.is_open.__bool__():
-                connecting_to_dongle = 1
-                return console
-        except:
-            print("Dongle not connected. Please reconnect Dongle.")
-            time.sleep(5)
-    print(f"\nConnected to Dongle.\n")
+    message = connect_to_dongle()
+    return render_template('connect.html', message=message)
 
 
 if __name__ == "__main__":
-    con = connect()
+
     app.run(debug=True)

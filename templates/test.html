@@ -1,5 +1,18 @@
-{% extends "base.html"%}
-{% block test_results %}
-<h1>test från test.html</h1>
-{{ result}}
+{% extends "connect.html"%}
+{% block test %}
+<h1>Test Results</h1>
+{% for test in result %}
+<table>
+    <tr>
+        {% for command in test.commands %}
+        <td>{{ command }}</td>
+        {% endfor %}
+    </tr>
+    <tr>
+        {% for result in test.result %}
+        <td>{{ result }}</td>
+        {% endfor %}
+    </tr>
+</table>
+{% endfor %}
 {% endblock %}

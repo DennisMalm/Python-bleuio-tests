@@ -1,0 +1,13 @@
+{% extends "base.html"%}
+{% block connected %}
+<h1>{{message}}</h1>
+{% if message == "Connected to dongle!"%}
+<form method="GET" action="/test">
+            <div>
+            <button class="btn btn-primary" type="submit">Start tests</button>
+            </div>
+        </form>
+{% endif %}
+{% block test %}
+{% endblock %}
+{% endblock %}
