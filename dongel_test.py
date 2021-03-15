@@ -115,7 +115,7 @@ def auto_test(test_list):
             print(f"Pausing for {str(test['pause'][pause_counter])}")
             time.sleep(test["pause"][pause_counter])
             pause_counter += 1
-            test["result"].append({command_counter: result})
+            test["result"].append({"Test: " + str(command_counter): result})
             command_counter += 1
         if test["restart"]:
             restart(test)
