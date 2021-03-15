@@ -1,9 +1,9 @@
 import random
 import serial
 import time
-from test_list import tests
-
-# from alpha_tests import tests
+from single_test_list import tests as tests
+from pair_test_list import tests as pair_tests
+from alpha_tests import tests as alpha_tests
 
 # Dongle and port settings
 connecting_to_dongle = 0
@@ -14,7 +14,7 @@ tty_port = "/dev/tty.usbmodem4048FDE52D231"
 
 # Test vars
 ctrl_c = "\x03"
-fail_states = ["ERROR", "Invalid"]
+fail_states = ["ERROR", "error", "Invalid"]
 
 # Test objects
 completed_tests = []
@@ -28,7 +28,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port=tty_port,
+                port=comport,
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
@@ -107,7 +107,6 @@ def auto_test(test_list):
     for test in tests:
         command_counter = 1
         pause_counter = 0
-        out = ' '
         if "mode" in test and test.get("mode") not in mode:
             switch_mode(test["mode"])
         for command in test["commands"]:
@@ -118,7 +117,6 @@ def auto_test(test_list):
             pause_counter += 1
             test["result"].append({command_counter: result})
             command_counter += 1
-            out = ' '
         if test["restart"]:
             restart(test)
         else:

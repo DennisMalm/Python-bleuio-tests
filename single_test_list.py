@@ -56,4 +56,16 @@ tests = [
         "result": [],
         "restart": False,
         "pause": [1]
+    }, {
+
+        "commands": ["AT+GAPIOCAP"],
+        "result": [],
+        "restart": False,
+        "pause": [0.5]
+    }, {
+
+        "commands": ["AT+SETPASSKEY=123456"],
+        "result": [],
+        "restart": False,
+        "pause": [0.5]
     }]
