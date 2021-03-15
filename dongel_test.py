@@ -1,33 +1,24 @@
 import random
 import serial
 import time
-from test_list import tests
+from single_test_list import tests as tests
+from pair_test_list import tests as pair_tests
+from alpha_tests import tests as alpha_tests
 
 # Dongle and port settings
 connecting_to_dongle = 0
-mode= "PERIPHERAL"
+mode = " "
 console = None
-comport = "COM4"
+comport = "COM5"
 tty_port = "/dev/tty.usbmodem4048FDE52D231"
 
+# Test vars
 ctrl_c = "\x03"
-fail_states = ["ERROR", "Invalid"]
+fail_states = ["ERROR", "error", "Invalid"]
 
 # Test objects
 completed_tests = []
-test_to_run = ["AT+ADVSTART", "AT+ADVSTOP"]
-local_tests = [{
-    "commands": ["AT"],
-    "result": [],
-    "restart": False,
-    "pause": [0.5]
-}, {
-
-    "commands": ["AT+ADVDATA=03:03:aa:fe 0d:16:aa:fe:10:00:03:67:6f:6f:67:6c:65:07", "AT+ADVSTART", "AT+ADVSTOP"],
-    "result": [],
-    "restart": False,
-    "pause": [5, 0.5, 0.5]
-}]
+test_to_run = []
 
 
 def connect():
@@ -37,7 +28,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port='COM4',
+                port=comport,
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
@@ -57,11 +48,12 @@ def menu():
     print("\nTest suite starting!\n")
     while True:
         choice = input(
-            "\n1. ATI\n2. TEST_DICT LENGTH\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Print completed tests\n7. AUTO TEST\n")
+            "\n1. ATI\n2. WRITE COMMAND\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Restart\n7. "
+            "AUTO TEST\n8. PAIRINGS\n")
         if choice == "1":
             send_command("ATI")
         elif choice == "2":
-            print(len(tests))
+            send_command(input("Write command to send: "))
         elif choice == "3":
             auto_test(random.choice(tests))
         elif choice == "4":
@@ -69,18 +61,21 @@ def menu():
         elif choice == "5":
             send_command("AT+CENTRAL")
         elif choice == "6":
-            print_completed_tests()
+            restart()
         elif choice == "7":
-            for test_object in tests:
-                auto_test(test_object)
+
+            auto_test(tests)
             print_completed_tests()
+            send_command("AT+PERIPHERAL")
+        elif choice == "8":
+            print("pair tester")
         else:
             print("Not valid input, try again.")
 
 
-def restart(restart):
+def restart(obj="No object."):
     global con
-    print(restart)
+    print(obj)
     print("Restarting.")
     con.write(str.encode("ATR"))
     con.write('\r'.encode())
@@ -98,56 +93,50 @@ def print_completed_tests():
         print(test_object["result"])
 
 
-def auto_test(test_object):
+def switch_mode(mode_change):
+    global mode
+    print(f"Switching mode to {mode_change}")
+    send_command(mode_change)
+    mode = mode_change
+    time.sleep(1)
+
+
+def auto_test(test_list):
+    global mode
     global con
-    out = ' '
-    command_counter = 1
-    pause_counter = 0
-    if "mode" in test_object:
-        send_command(test_object["mode"])
-    for command in test_object["commands"]:
-        print(f"\nNow testing: {command}\n-----------------")
-        con.write(str.encode(command))
-        con.write('\r'.encode())
-        time.sleep(1)
-
-        while con.inWaiting() > 0:
-            out += con.read(con.inWaiting()).decode()
-        time.sleep(0.2)
-        if not out.isspace():
-            print(">>" + out)
-        print("pausing " + str(test_object["pause"][pause_counter]))
-        time.sleep(test_object["pause"][pause_counter])
-        pause_counter += 1
-        if test_object.get("expected") in fail_states and test_object.get("expected") in out:
-            pass_or_fail = "Pass"
+    for test in tests:
+        command_counter = 1
+        pause_counter = 0
+        if "mode" in test and test.get("mode") not in mode:
+            switch_mode(test["mode"])
+        for command in test["commands"]:
+            print(f"\n------------------------\nNow testing: {command}")
+            result = send_command(command)
+            print(f"Pausing for {str(test['pause'][pause_counter])}")
+            time.sleep(test["pause"][pause_counter])
+            pause_counter += 1
+            test["result"].append({command_counter: result})
+            command_counter += 1
+        if test["restart"]:
+            restart(test)
         else:
-            pass_or_fail = "Fail" if "ERROR" in out or "Invalid" in out else "Pass"
-        test_object["result"].append({command_counter: pass_or_fail})
-        out = ' '
-        command_counter += 1
-    if test_object["restart"]:
-        restart(test_object)
-    else:
-        print(test_object)
+            print(test)
 
 
-def send_command(cmd_one, cmd_two="ATI", dual=False):
-    con.write(str.encode(cmd_one))
+def send_command(cmd):
+    con.write(cmd.encode())
     con.write('\r'.encode())
-    time.sleep(0.5)
-    if dual:
-        con.write(str.encode(cmd_two))
-        con.write('\r'.encode())
     out = ' '
     time.sleep(0.5)
     while con.inWaiting() > 0:
         out += con.read(con.inWaiting()).decode()
     if not out.isspace():
-        print(f">> {out} {cmd_one}")
+        print(out)
     time.sleep(0.1)
+    return "Fail" if any(ele in out for ele in fail_states) else "Pass"
 
 
 # Start of program
-con = connect()
-menu()
+if __name__ == "__main__":
+    con = connect()
+    menu()

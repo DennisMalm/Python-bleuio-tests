@@ -1,0 +1,19 @@
+{% extends "base.html"%}
+{% block test_results %}
+<h1>test från result.html</h1>
+{{ result}}
+{% endblock %}
+
+<script>
+    function newNumber() {
+        $.ajax({
+            url:"/start",
+            type: "POST",
+            dataType: "json",
+            success: function(data){
+
+            }
+        });
+    }
+
+</script>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Index</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+</head>
+<body>
+    <h1>Bleuio test suite</h1>
+<form method="POST" action="/start">
+    <div>
+    <button class="btn btn-primary" type="submit">Start test</button>
+    </div>
+</form>
+{% block test_results %}
+    {% endblock %}
+</body>
+</html>
