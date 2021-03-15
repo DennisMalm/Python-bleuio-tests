@@ -10,7 +10,7 @@ connecting_to_dongle = 0
 mode = " "
 console = None
 comport = "COM5"
-tty_port = "/dev/tty.usbmodem4048FDE52D2C1"
+tty_port = "/dev/tty.usbmodem4048FDE52D231"
 
 # Test vars
 ctrl_c = "\x03"
@@ -28,7 +28,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port=comport,
+                port=tty_port,
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
@@ -112,14 +112,11 @@ def auto_test(test_list):
             switch_mode(test["mode"])
         for command in test["commands"]:
             print(f"\n------------------------\nNow testing: {command}")
-            send_command(command)
+            result = send_command(command)
             print(f"Pausing for {str(test['pause'][pause_counter])}")
             time.sleep(test["pause"][pause_counter])
             pause_counter += 1
-            # pass_or_fail = "Fail" if "ERROR" in out or "Invalid" in out else "Pass"
-            pass_or_fail = any(fail_states in out)
-            print(pass_or_fail)
-            test["result"].append({command_counter: str(pass_or_fail)})
+            test["result"].append({command_counter: result})
             command_counter += 1
             out = ' '
         if test["restart"]:
@@ -138,6 +135,7 @@ def send_command(cmd):
     if not out.isspace():
         print(out)
     time.sleep(0.1)
+    return "Fail" if any(ele in out for ele in fail_states) else "Pass"
 
 
 # Start of program
