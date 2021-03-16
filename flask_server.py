@@ -103,7 +103,7 @@ def send_command(cmd):
 # Routes
 @app.route('/')
 def base():
-    return render_template('base.html')
+    return render_template('index.html', connected=connecting_to_dongle)
 
 
 @app.route('/test')
