@@ -1,7 +1,7 @@
 import time
 import serial
 import numpy as np
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, jsonify
 from single_test_list import tests
 
 # Flask
@@ -55,7 +55,6 @@ def restart(obj="No object."):
     con = connect()
 
 
-
 def switch_mode(mode_change):
     global mode
     print(f"Switching mode to {mode_change}")
@@ -84,6 +83,7 @@ def auto_test(test_list):
             restart(test)
         else:
             print(test)
+        return test_list
 
 
 def send_command(cmd):
@@ -99,6 +99,8 @@ def send_command(cmd):
     return "Fail" if any(ele in out for ele in fail_states) else "Pass"
 
 
+completed_test = None
+
 
 # Routes
 @app.route('/')
@@ -106,22 +108,26 @@ def base():
     return render_template('index.html', connected=connecting_to_dongle)
 
 
-@app.route('/test')
-def test():
-    auto_test(tests)
-    return render_template('test.html', result=tests)
+@app.route('/update_page', methods=['POST', 'GET'])
+def update_page():
+    return jsonify('', render_template('test.html', result=completed_test))
+    # return render_template('test.html', result=tests)
 
 
-@app.route('/start', methods=["POST"])
-def start_tests():
+@app.route('/start', methods=['POST'])
+def start():
+    # global completed_test
+    # completed_test = auto_test(tests)
     return render_template('result.html')
 
-@app.route('/connect')
+
+@app.route('/connect', methods=['POST', 'GET'])
 def connect():
+    global completed_test
     message = connect_to_dongle()
-    return render_template('connect.html', message=message)
+    completed_test = auto_test(tests)
+    return render_template('result.html', message=message, result=completed_test)
 
 
 if __name__ == "__main__":
-
     app.run(debug=True)

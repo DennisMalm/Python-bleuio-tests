@@ -1,21 +1,27 @@
 {% extends "base.html" %}
-{% block start %}
-<div class="container-fluid">
-        <div class="row">
-            <div class="col-md-8">
-                <form method="POST" action="/start">
-                    <div>
-                    <button class="btn btn-primary" type="submit">Start test</button>
-                    </div>
-                </form>
-            </div>
-            <div class="col-sm">
-                <form method="GET" action="/connect">
-                    <div>
-                    <button class="btn btn-primary" type="submit">Connect to dongle</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+{% block index %}
+<div class="wrapper fadeInDown">
+  <div id="formContent">
+    <!-- Tabs Titles -->
+
+    <!-- Icon -->
+    <div class="fadeIn first p-2">
+      <img src="https://www.bleuio.com/getting_started//img/logo.png" id="icon" alt="User Icon" />
+
     </div>
+
+    <!-- Login Form -->
+    <form method="POST" action="/connect">
+      <input type="text" id="login" class="fadeIn second" name="login" placeholder="Port">
+      <input type="text" id="password" class="fadeIn third" name="login" placeholder="Target">
+      <input type="submit" class="fadeIn fourth" value="Connect and Test">
+    </form>
+
+    <!-- Remind Passowrd -->
+    <div id="formFooter">
+      <a class="underlineHover" href="#">Something...</a>
+    </div>
+
+  </div>
+</div>
 {% endblock %}

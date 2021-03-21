@@ -1,18 +1,60 @@
 {% extends "base.html"%}
-{% block test_results %}
-<h1>test från result.html</h1>
-{{ result}}
-{% endblock %}
-
+{% block test_result %}
 <script>
-    function newNumber() {
-        $.ajax({
-            url:"/start",
-            type: "POST",
-            dataType: "json",
-            success: function(data){
+    $(function() {
+        window.setInterval(function(){
+            startTests()
+        }, 2000)
 
-            }
-        });
-    }
+        function startTests() {
+            $.ajax({
+                url: "/update_page",
+                type: "POST",
+                dataType: "json",
+                success: function (data) {
+                    $(completed_test).replaceWith(data)
+                }
+            });
+        }
+    })
 </script>
+<div class="wrapper w-75 fadeInDown">
+  <div id="formContent">
+    <!-- Tabs Titles -->
+
+    <!-- Icon -->
+    <div class="fadeIn first p-2">
+      <img src="https://www.bleuio.com/getting_started//img/logo.png" id="icon" alt="User Icon" />
+        <div class="fadeIn first">
+            <h4>{{ message }}</h4>
+        </div>
+    </div>
+
+    <!-- Result List -->
+     {% if result %}
+        {% for test in result %}
+        <table>
+            <tr>
+                {% for command in test.commands %}
+                <td>{{ command }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for result in test.result %}
+                <td>{{ result }}</td>
+                {% endfor %}
+            </tr>
+        </table>
+        {% endfor %}
+      {% endif %}
+    <div id="completed_test">
+        {{result}}
+    </div>
+    <!-- Remind Passowrd -->
+    <div id="formFooter">
+      <a class="underlineHover" href="#">Test again...</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
