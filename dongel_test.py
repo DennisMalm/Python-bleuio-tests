@@ -1,9 +1,9 @@
 import random
 import serial
 import time
-from single_test_list import tests as tests
+from single_test_list import tests as singel_tests
 from pair_test_list import tests as pair_tests
-from alpha_tests import tests as alpha_tests
+from check_dongle_code import tests as alpha_tests
 
 # Dongle and port settings
 connecting_to_dongle = 0
@@ -55,7 +55,7 @@ def menu():
         elif choice == "2":
             send_command(input("Write command to send: "))
         elif choice == "3":
-            auto_test(random.choice(tests))
+            auto_test(random.choice(singel_tests))
         elif choice == "4":
             send_command("AT+PERIPHERAL")
         elif choice == "5":
@@ -63,12 +63,13 @@ def menu():
         elif choice == "6":
             restart()
         elif choice == "7":
-
-            auto_test(tests)
+            auto_test(singel_tests)
             print_completed_tests()
-            send_command("AT+PERIPHERAL")
+            switch_mode("AT+PERIPHERAL")
         elif choice == "8":
-            print("pair tester")
+            auto_test(pair_tests)
+            print_completed_tests()
+            switch_mode("AT+PERIPHERAL")
         else:
             print("Not valid input, try again.")
 
@@ -86,11 +87,15 @@ def restart(obj="No object."):
 
 
 def print_completed_tests():
-    for test_object in tests:
-        print("\n\n[Commands Run]")
-        print(test_object["commands"])
-        print("[Result]")
-        print(test_object["result"])
+    run_counter = 1
+    for test_run in completed_tests:
+        print(f"-------------\nTest run: {run_counter}\n-------------")
+        for test in test_run:
+            print("\n[Commands Run]")
+            print(test["commands"])
+            print("[Result]")
+            print(test["result"])
+        run_counter += 1
 
 
 def switch_mode(mode_change):
@@ -101,14 +106,17 @@ def switch_mode(mode_change):
     time.sleep(1)
 
 
-def auto_test(test_list):
+def auto_test(test_list_template):
     global mode
     global con
-    for test in tests:
+    test_list = test_list_template
+    for test in test_list:
         command_counter = 1
         pause_counter = 0
-        if "mode" in test and test.get("mode") not in mode:
+        if "mode" in test and test.get("mode") != mode:
+            print("before mode change --------")
             switch_mode(test["mode"])
+            print("after mode change ---------")
         for command in test["commands"]:
             print(f"\n------------------------\nNow testing: {command}")
             result = send_command(command)
@@ -121,6 +129,7 @@ def auto_test(test_list):
             restart(test)
         else:
             print(test)
+    completed_tests.append(test_list)
 
 
 def send_command(cmd):
