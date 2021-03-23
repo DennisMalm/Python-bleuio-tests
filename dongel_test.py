@@ -1,7 +1,7 @@
 import random
 import serial
 import time
-from single_test_list import tests as singel_tests
+from single_test_list import tests as single_tests
 from pair_test_list import tests as pair_tests
 from check_dongle_code import tests as alpha_tests
 
@@ -49,13 +49,13 @@ def menu():
     while True:
         choice = input(
             "\n1. ATI\n2. WRITE COMMAND\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Restart\n7. "
-            "AUTO TEST\n8. PAIRINGS\n")
+            "AUTO TEST\n8. PAIRINGS\n9. WRITE TO FILE\n")
         if choice == "1":
             send_command("ATI")
         elif choice == "2":
             send_command(input("Write command to send: "))
         elif choice == "3":
-            auto_test(random.choice(singel_tests))
+            auto_test(random.choice(single_tests))
         elif choice == "4":
             send_command("AT+PERIPHERAL")
         elif choice == "5":
@@ -63,13 +63,17 @@ def menu():
         elif choice == "6":
             restart()
         elif choice == "7":
-            auto_test(singel_tests)
+            auto_test(single_tests)
             print_completed_tests()
             switch_mode("AT+PERIPHERAL")
         elif choice == "8":
             auto_test(pair_tests)
             print_completed_tests()
             switch_mode("AT+PERIPHERAL")
+        elif choice == "9":
+            file = open('test_run.txt', 'w')
+            file.write('writing something...')
+            file.close()
         else:
             print("Not valid input, try again.")
 
