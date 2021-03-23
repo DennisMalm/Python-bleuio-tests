@@ -18,7 +18,7 @@ fail_states = ["ERROR", "error", "Invalid"]
 
 # Test objects
 completed_tests = []
-test_to_run = []
+# test_to_run = []
 
 
 def connect():
@@ -28,7 +28,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port=comport,
+                port=tty_port,
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
