@@ -27,7 +27,7 @@ tests = [
         "commands": ["AT+ADVDATA=03:03:aa:fe 0d:16:aa:fe:10:00:03:67:6f:6f:67:6c:65:07", "AT+ADVSTART", "AT+ADVSTOP"],
         "mode": "AT+PERIPHERAL",
         "result": [],
-        "restart": False,
+        "restart": True,
         "pause": [1, 1, 1]
     }, {
 

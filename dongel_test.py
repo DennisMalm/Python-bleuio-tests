@@ -11,6 +11,7 @@ mode = " "
 console = None
 comport = "COM5"
 tty_port = "/dev/tty.usbmodem4048FDE52D231"
+target_dongle_address = "Placeholder"
 
 # Test vars
 ctrl_c = "\x03"
@@ -18,7 +19,23 @@ fail_states = ["ERROR", "error", "Invalid"]
 
 # Test objects
 completed_tests = []
+
+
 # test_to_run = []
+
+def dongle_settings():
+    global comport
+    global target_dongle_address
+    user_port = input("Port id: ")
+    print(user_port)
+    if user_port:
+        comport = user_port
+    print(comport)
+    user_target = input("Target address: ")
+    print(user_target)
+    if user_target:
+        target_dongle_address = user_target
+    print(target_dongle_address)
 
 
 def connect():
@@ -49,7 +66,7 @@ def menu():
     while True:
         choice = input(
             "\n1. ATI\n2. WRITE COMMAND\n3. RANDOM FROM TEST_DICT LENGTH\n4. PERIPHERAL\n5. CENTRAL \n6. Restart\n7. "
-            "AUTO TEST\n8. PAIRINGS\n9. WRITE TO FILE\n")
+            "AUTO TEST\n8. PAIRINGS\n9. WRITE TO FILE\n10. Set Port and Target\n")
         if choice == "1":
             send_command("ATI")
         elif choice == "2":
@@ -74,6 +91,8 @@ def menu():
             file = open('test_run.txt', 'w')
             file.write('writing something...')
             file.close()
+        elif choice == "10":
+            dongle_settings()
         else:
             print("Not valid input, try again.")
 
@@ -151,5 +170,6 @@ def send_command(cmd):
 
 # Start of program
 if __name__ == "__main__":
+    dongle_settings()
     con = connect()
     menu()
