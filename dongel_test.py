@@ -17,7 +17,7 @@ target_dongle_address = "Placeholder"
 ctrl_c = "\x03"
 fail_states = ["ERROR", "error", "Invalid"]
 
-# Test objects
+# Test Run
 completed_tests = []
 
 
