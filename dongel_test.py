@@ -1,6 +1,7 @@
 import random
 import serial
 import time
+import datetime
 from single_test_list import tests as single_tests
 from pair_test_list import tests as pair_tests
 from check_dongle_code import tests as alpha_tests
@@ -45,7 +46,7 @@ def connect():
         print("\nConnecting to dongle...")
         try:
             console = serial.Serial(
-                port=tty_port,
+                port=comport,
                 baudrate=57600,
                 parity="N",
                 stopbits=1,
@@ -88,11 +89,13 @@ def menu():
             print_completed_tests()
             switch_mode("AT+PERIPHERAL")
         elif choice == "9":
-            file = open('test_run.txt', 'w')
+            file = open(str(datetime.datetime.now()), 'w')
             file.write('writing something...')
             file.close()
         elif choice == "10":
             dongle_settings()
+        elif choice == "11":
+            print(datetime.datetime.now())
         else:
             print("Not valid input, try again.")
 
@@ -111,6 +114,10 @@ def restart(obj="No object."):
 
 def print_completed_tests():
     run_counter = 1
+    filename = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file = open(filename, 'w')
+    test_commands = ''
+    test_results = ''
     for test_run in completed_tests:
         print(f"-------------\nTest run: {run_counter}\n-------------")
         for test in test_run:
@@ -118,7 +125,11 @@ def print_completed_tests():
             print(test["commands"])
             print("[Result]")
             print(test["result"])
+            for key, value in test.items():
+                file.write('%s:%s\n' % (key, value))
         run_counter += 1
+    file.write(f"\n[Commands Run]\n {test_commands}\n[Result]\n {test_results}")
+    file.close()
 
 
 def switch_mode(mode_change):
@@ -157,7 +168,8 @@ def auto_test(test_list_template):
 
 def send_command(cmd):
     con.write(cmd.encode())
-    con.write('\r'.encode())
+    if cmd != "\x03":
+        con.write('\r'.encode())
     out = ' '
     time.sleep(0.5)
     while con.inWaiting() > 0:
